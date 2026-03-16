@@ -1,5 +1,31 @@
 -- Add custom dir to runtimepath so ftplugin/ and after/ are picked up
 vim.opt.runtimepath:prepend(vim.fn.stdpath("config") .. "/lua/custom")
+
+-- Module aliases: old nvchad_ui paths → new nvchad paths
+-- Uses package.preload for lazy resolution (plugins not yet loaded at this point)
+local aliases = {
+  ["nvchad_ui"] = "nvchad",
+  ["nvchad_ui.lsp"] = "nvchad.lsp",
+  ["nvchad_ui.signature"] = "nvchad.signature",
+  ["nvchad_ui.tabufline"] = "nvchad.tabufline",
+  ["nvchad_ui.renamer"] = "nvchad.renamer",
+  ["nvchad_ui.statusline.default"] = "nvchad.statusline.default",
+}
+
+for old, new in pairs(aliases) do
+  package.preload[old] = function()
+    return require(new)
+  end
+end
+
+-- Special case: nvchad_ui.icons has a different structure
+package.preload["nvchad_ui.icons"] = function()
+  return {
+    lspkind = require("nvchad.icons.lspkind"),
+    devicons = require("nvchad.icons.devicons"),
+  }
+end
+
 vim.wo.relativenumber = true
 vim.opt.clipboard = "unnamedplus"
 vim.opt.wrap = false
